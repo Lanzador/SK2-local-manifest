@@ -359,7 +359,7 @@ namespace SteamKit2
 
             //manifestData = ZipUtil.Decompress( manifestData );
             
-            manifestData = File.ReadAllBytes("SK2.manifest")
+            manifestData = File.ReadAllBytes("SK2.manifest");
 
             var depotManifest = new DepotManifest( manifestData );
 
