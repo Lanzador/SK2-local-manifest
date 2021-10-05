@@ -355,9 +355,11 @@ namespace SteamKit2
                 throw new ArgumentNullException( nameof( server ) );
             }
 
-            var manifestData = await DoRawCommandAsync( server, string.Format( "depot/{0}/manifest/{1}/5", depotId, manifestId ), cdnAuthToken, proxyServer ).ConfigureAwait( false );
+            //var manifestData = await DoRawCommandAsync( server, string.Format( "depot/{0}/manifest/{1}/5", depotId, manifestId ), cdnAuthToken, proxyServer ).ConfigureAwait( false );
 
-            manifestData = ZipUtil.Decompress( manifestData );
+            //manifestData = ZipUtil.Decompress( manifestData );
+            
+            manifestData = File.ReadAllBytes("SK2.manifest")
 
             var depotManifest = new DepotManifest( manifestData );
 
