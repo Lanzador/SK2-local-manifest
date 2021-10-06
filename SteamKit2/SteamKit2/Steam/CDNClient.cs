@@ -510,14 +510,28 @@ namespace SteamKit2
         /// <exception cref="SteamKitWebRequestException">A network error occurred when performing the request.</exception>
         public async Task<DepotManifest> DownloadManifestAsync( uint depotId, ulong manifestId, Server server, string cdnAuthToken, byte[] depotKey )
         {
-            if ( server == null )
+
+            var manifestData;
+            
+            if (File.Exists(String.Format("manifests\\{0}_{1}.manifest", depotId, manifestId)))
             {
-                throw new ArgumentNullException( nameof( server ) );
+                manifestData = File.ReadAllBytes(String.Format("manifests\\{0}_{1}.manifest", depotId, manifestId));
             }
+            else if (File.Exists(String.Format("manifests\\SK2.manifest", depotId, manifestId)))
+            {
+                manifestData = File.ReadAllBytes(String.Format("manifests\\SK2.manifest"));
+            }
+            else
+            {
+                if ( server == null )
+                {
+                    throw new ArgumentNullException( nameof( server ) );
+                }
+                
+                manifestData = await DoRawCommandAsync( server, HttpMethod.Get, "depot", doAuth: true, args: string.Format( "{0}/manifest/{1}/5", depotId, manifestId ), authtoken: cdnAuthToken ).ConfigureAwait( false );
 
-            var manifestData = await DoRawCommandAsync( server, HttpMethod.Get, "depot", doAuth: true, args: string.Format( "{0}/manifest/{1}/5", depotId, manifestId ), authtoken: cdnAuthToken ).ConfigureAwait( false );
-
-            manifestData = ZipUtil.Decompress( manifestData );
+                manifestData = ZipUtil.Decompress( manifestData );
+            }
 
             var depotManifest = new DepotManifest( manifestData );
 
