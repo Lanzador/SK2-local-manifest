@@ -515,10 +515,12 @@ namespace SteamKit2
             
             if (File.Exists(String.Format("manifests\\{0}_{1}.manifest", depotId, manifestId)))
             {
+                Console.WriteLine("Reading manifest from file (depot_manifest)");
                 manifestData = File.ReadAllBytes(String.Format("manifests\\{0}_{1}.manifest", depotId, manifestId));
             }
             else if (File.Exists(String.Format("manifests\\SK2.manifest", depotId, manifestId)))
             {
+                Console.WriteLine("Reading manifest from file (SK2)");
                 manifestData = File.ReadAllBytes(String.Format("manifests\\SK2.manifest"));
             }
             else
