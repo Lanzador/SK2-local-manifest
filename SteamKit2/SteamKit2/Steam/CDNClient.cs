@@ -511,17 +511,17 @@ namespace SteamKit2
         public async Task<DepotManifest> DownloadManifestAsync( uint depotId, ulong manifestId, Server server, string cdnAuthToken, byte[] depotKey )
         {
 
-            var manifestData;
+            byte[] manifestData;
             
             if (File.Exists(String.Format("manifests\\{0}_{1}.manifest", depotId, manifestId)))
             {
                 Console.WriteLine("Reading manifest from file (depot_manifest)");
                 manifestData = File.ReadAllBytes(String.Format("manifests\\{0}_{1}.manifest", depotId, manifestId));
             }
-            else if (File.Exists(String.Format("manifests\\SK2.manifest", depotId, manifestId)))
+            else if (File.Exists(String.Format("manifests\\{0}.manifest", depotId)))
             {
-                Console.WriteLine("Reading manifest from file (SK2)");
-                manifestData = File.ReadAllBytes(String.Format("manifests\\SK2.manifest"));
+                Console.WriteLine("Reading manifest from file (depot)");
+                manifestData = File.ReadAllBytes(String.Format("manifests\\{0}.manifest", depotId));
             }
             else
             {
@@ -533,6 +533,20 @@ namespace SteamKit2
                 manifestData = await DoRawCommandAsync( server, HttpMethod.Get, "depot", doAuth: true, args: string.Format( "{0}/manifest/{1}/5", depotId, manifestId ), authtoken: cdnAuthToken ).ConfigureAwait( false );
 
                 manifestData = ZipUtil.Decompress( manifestData );
+				
+				if (!File.Exists("manifests\\downloaded\\NOSAVE.txt"))
+				{
+					if (!Directory.Exists("manifests"))
+				    {
+						Directory.CreateDirectory("manifests");
+						Directory.CreateDirectory("manifests\\downloaded");
+				    }
+					else if (!Directory.Exists("manifests\\downloaded"))
+					{
+						Directory.CreateDirectory("manifests\\downloaded");
+				    }
+				    File.WriteAllBytes(String.Format("manifests\\downloaded\\{0}_{1}.manifest", depotId, manifestId), manifestData);
+				}
             }
 
             var depotManifest = new DepotManifest( manifestData );
