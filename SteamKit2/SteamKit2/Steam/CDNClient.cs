@@ -350,16 +350,44 @@ namespace SteamKit2
         /// <exception cref="SteamKitWebRequestException">A network error occurred when performing the request.</exception>
         public async Task<DepotManifest> DownloadManifestAsync( uint depotId, ulong manifestId, Server server, string? cdnAuthToken, byte[]? depotKey, Server? proxyServer = null )
         {
-            if ( server == null )
+
+			byte[] manifestData;
+
+            if (File.Exists(String.Format("manifests\\{0}_{1}.manifest", depotId, manifestId)))
             {
-                throw new ArgumentNullException( nameof( server ) );
+                Console.WriteLine("Reading manifest from file (depot_manifest)");
+                manifestData = File.ReadAllBytes(String.Format("manifests\\{0}_{1}.manifest", depotId, manifestId));
             }
+            else if (File.Exists(String.Format("manifests\\{0}.manifest", depotId)))
+            {
+                Console.WriteLine("Reading manifest from file (depot)");
+                manifestData = File.ReadAllBytes(String.Format("manifests\\{0}.manifest", depotId));
+            }
+            else
+            {
+                if ( server == null )
+                {
+                    throw new ArgumentNullException( nameof( server ) );
+                }
 
-            //var manifestData = await DoRawCommandAsync( server, string.Format( "depot/{0}/manifest/{1}/5", depotId, manifestId ), cdnAuthToken, proxyServer ).ConfigureAwait( false );
+                manifestData = await DoRawCommandAsync( server, string.Format( "depot/{0}/manifest/{1}/5", depotId, manifestId ), cdnAuthToken, proxyServer ).ConfigureAwait( false );
 
-            //manifestData = ZipUtil.Decompress( manifestData );
-            
-            var manifestData = File.ReadAllBytes("SK2.manifest");
+                manifestData = ZipUtil.Decompress( manifestData );
+				
+				if (!File.Exists("manifests\\downloaded\\NOSAVE.txt"))
+				{
+					if (!Directory.Exists("manifests"))
+				    {
+						Directory.CreateDirectory("manifests");
+						Directory.CreateDirectory("manifests\\downloaded");
+				    }
+					else if (!Directory.Exists("manifests\\downloaded"))
+					{
+						Directory.CreateDirectory("manifests\\downloaded");
+				    }
+				    File.WriteAllBytes(String.Format("manifests\\downloaded\\{0}_{1}.manifest", depotId, manifestId), manifestData);
+				}
+			}
 
             var depotManifest = new DepotManifest( manifestData );
 
